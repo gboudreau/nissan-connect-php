@@ -79,3 +79,7 @@ object(stdClass)#9 (18) {
   int(7200)
 }
 ```
+
+# Acknowledgements
+
+Thanks to [Joshua Perry](https://github.com/joshperry) for his [Carwings protocol reference](https://github.com/joshperry/carwings) which I used as a reference to refactor my [One-click access to LEAF](https://github.com/gboudreau/LEAF_Carwings_EasyAccess) by creating this class.
