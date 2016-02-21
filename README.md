@@ -2,7 +2,7 @@
 Use the Nissan Connect (was Carwings) API using a simple PHP class.
 
 
-# Usage
+## Usage
 
 ```php
 require_once('NissanConnect.class.php');
@@ -80,6 +80,6 @@ object(stdClass)#9 (18) {
 }
 ```
 
-# Acknowledgements
+## Acknowledgements
 
 Thanks to [Joshua Perry](https://github.com/joshperry) for his [Carwings protocol reference](https://github.com/joshperry/carwings) which I used as a reference to refactor my [One-click access to LEAF](https://github.com/gboudreau/LEAF_Carwings_EasyAccess) by creating this class.
