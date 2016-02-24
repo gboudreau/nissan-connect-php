@@ -120,28 +120,14 @@ class NissanConnect {
             $this->sendRequest('BatteryStatusCheckRequest.php');
             $this->waitUntilSuccess('BatteryStatusCheckResultRequest.php');
         }
+        
+        $allowed_op_result = array('START', 'START_BATTERY', 'FINISH');
 
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
-        if (empty($response->BatteryStatusRecords)) {
-            throw new Exception("Missing 'BatteryStatusRecords' in response received in call to 'BatteryStatusRecordsRequest.php': " . json_encode($response), static::ERROR_CODE_INVALID_RESPONSE);
-        }
-        if (empty($response->BatteryStatusRecords->OperationResult)) {
-            throw new Exception("Missing 'BatteryStatusRecords->OperationResult' in response received in call to 'BatteryStatusRecordsRequest.php': " . json_encode($response), static::ERROR_CODE_INVALID_RESPONSE);
-        }
-        if ($response->BatteryStatusRecords->OperationResult != "START" && $response->BatteryStatusRecords->OperationResult != "FINISH") {
-            throw new Exception("Invalid 'OperationResult' received in call to 'BatteryStatusRecordsRequest.php': " . $response->BatteryStatusRecords->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
-        }
+        $this->_checkStatusResult($response, 'BatteryStatusRecords');
 
         $response2 = $this->sendRequest('RemoteACRecordsRequest.php');
-        if (empty($response2->RemoteACRecords)) {
-            throw new Exception("Missing 'RemoteACRecords' in response received in call to 'RemoteACRecordsRequest.php': " . json_encode($response2), static::ERROR_CODE_INVALID_RESPONSE);
-        }
-        if (empty($response2->RemoteACRecords->OperationResult)) {
-            throw new Exception("Missing 'RemoteACRecords->OperationResult' in response received in call to 'RemoteACRecordsRequest.php': " . json_encode($response2), static::ERROR_CODE_INVALID_RESPONSE);
-        }
-        if ($response2->RemoteACRecords->OperationResult != "START" && $response2->RemoteACRecords->OperationResult != "FINISH") {
-            throw new Exception("Invalid 'OperationResult' received in call to 'RemoteACRecordsRequest.php': " . $response2->RemoteACRecords->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
-        }
+        $this->_checkStatusResult($response2, 'RemoteACRecords');
 
         $result = new stdClass();
 
@@ -206,6 +192,19 @@ class NissanConnect {
         $result->ACDurationPluggedSec = (int) $response2->RemoteACRecords->ACDurationPluggedSec;
 
         return $result;
+    }
+    
+    private function _checkStatusResult($response, $what) {
+        $allowed_op_result = array('START', 'START_BATTERY', 'FINISH');
+        if (empty($response->{$what})) {
+            throw new Exception("Missing '$what' in response received in call to '{$what}Request.php': " . json_encode($response), static::ERROR_CODE_INVALID_RESPONSE);
+        }
+        if (empty($response->{$what}->OperationResult)) {
+            throw new Exception("Missing '$what->OperationResult' in response received in call to '{$what}Request.php': " . json_encode($response), static::ERROR_CODE_INVALID_RESPONSE);
+        }
+        if (array_search($response->{$what}->OperationResult, $allowed_op_result) === FALSE) {
+            throw new Exception("Invalid 'OperationResult' received in call to '{$what}Request.php': " . $response->{$what}->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
+        }
     }
 
     /**
