@@ -181,7 +181,7 @@ class NissanConnect {
             $result->CruisingRangeUnit = 'km';
         }
 
-        $result->RemoteACRunning = ($response2->RemoteACRecords->RemoteACOperation == 'START');
+        $result->RemoteACRunning = ($response2->RemoteACRecords->PluginState == 'CONNECTED' && $response2->RemoteACRecords->RemoteACOperation != 'STOP');
         $result->RemoteACLastChanged = date('Y-m-d H:i', strtotime($response2->RemoteACRecords->ACStartStopDateAndTime));
         if (!empty($response2->RemoteACRecords->ACStartStopURL)) {
             $result->ACStartStopURL = $response2->RemoteACRecords->ACStartStopURL;
