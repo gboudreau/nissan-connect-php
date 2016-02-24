@@ -122,12 +122,12 @@ class NissanConnect {
         }
 
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
-        if ($response->BatteryStatusRecords->OperationResult != "START") {
+        if ($response->BatteryStatusRecords->OperationResult != "START" && $response->BatteryStatusRecords->OperationResult != "FINISH") {
             throw new Exception("Invalid 'OperationResult' received in call to 'BatteryStatusRecordsRequest.php': " . $response->BatteryStatusRecords->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
         }
 
         $response2 = $this->sendRequest('RemoteACRecordsRequest.php');
-        if ($response2->RemoteACRecords->OperationResult != "START") {
+        if ($response2->RemoteACRecords->OperationResult != "START" && $response2->RemoteACRecords->OperationResult != "FINISH") {
             throw new Exception("Invalid 'OperationResult' received in call to 'RemoteACRecordsRequest.php': " . $response2->RemoteACRecords->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
         }
 
