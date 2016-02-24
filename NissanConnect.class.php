@@ -122,11 +122,23 @@ class NissanConnect {
         }
 
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
+        if (empty($response->BatteryStatusRecords)) {
+            throw new Exception("Missing 'BatteryStatusRecords' in response received in call to 'BatteryStatusRecordsRequest.php': " . json_encode($response), static::ERROR_CODE_INVALID_RESPONSE);
+        }
+        if (empty($response->BatteryStatusRecords->OperationResult)) {
+            throw new Exception("Missing 'BatteryStatusRecords->OperationResult' in response received in call to 'BatteryStatusRecordsRequest.php': " . json_encode($response), static::ERROR_CODE_INVALID_RESPONSE);
+        }
         if ($response->BatteryStatusRecords->OperationResult != "START" && $response->BatteryStatusRecords->OperationResult != "FINISH") {
             throw new Exception("Invalid 'OperationResult' received in call to 'BatteryStatusRecordsRequest.php': " . $response->BatteryStatusRecords->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
         }
 
         $response2 = $this->sendRequest('RemoteACRecordsRequest.php');
+        if (empty($response2->RemoteACRecords)) {
+            throw new Exception("Missing 'RemoteACRecords' in response received in call to 'RemoteACRecordsRequest.php': " . json_encode($response2), static::ERROR_CODE_INVALID_RESPONSE);
+        }
+        if (empty($response2->RemoteACRecords->OperationResult)) {
+            throw new Exception("Missing 'RemoteACRecords->OperationResult' in response received in call to 'RemoteACRecordsRequest.php': " . json_encode($response2), static::ERROR_CODE_INVALID_RESPONSE);
+        }
         if ($response2->RemoteACRecords->OperationResult != "START" && $response2->RemoteACRecords->OperationResult != "FINISH") {
             throw new Exception("Invalid 'OperationResult' received in call to 'RemoteACRecordsRequest.php': " . $response2->RemoteACRecords->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
         }
