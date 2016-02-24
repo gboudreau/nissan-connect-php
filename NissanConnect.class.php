@@ -26,6 +26,7 @@ class NissanConnect {
     /* Those error code will be used in Exception that can be thrown when errors occur. */
     const ERROR_CODE_MISSING_RESULTKEY = 400;
     const ERROR_CODE_LOGIN_FAILED = 403;
+    const ERROR_CODE_INVALID_RESPONSE = 405;
     const ERROR_CODE_NOT_JSON = 406;
     const ERROR_CODE_TIMEOUT = 408;
 
@@ -122,12 +123,12 @@ class NissanConnect {
 
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
         if ($response->BatteryStatusRecords->OperationResult != "START") {
-            throw new Exception("Invalid 'OperationResult' received in call to 'BatteryStatusRecordsRequest.php': " . $response->BatteryStatusRecords->OperationResult, static::ERROR_CODE_LOGIN_FAILED);
+            throw new Exception("Invalid 'OperationResult' received in call to 'BatteryStatusRecordsRequest.php': " . $response->BatteryStatusRecords->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
         }
 
         $response2 = $this->sendRequest('RemoteACRecordsRequest.php');
         if ($response2->RemoteACRecords->OperationResult != "START") {
-            throw new Exception("Invalid 'OperationResult' received in call to 'RemoteACRecordsRequest.php': " . $response->RemoteACRecords->OperationResult, static::ERROR_CODE_LOGIN_FAILED);
+            throw new Exception("Invalid 'OperationResult' received in call to 'RemoteACRecordsRequest.php': " . $response2->RemoteACRecords->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
         }
 
         $result = new stdClass();
