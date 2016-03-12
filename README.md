@@ -4,12 +4,14 @@ Use the Nissan Connect (was Carwings) API using a simple PHP class.
 
 ## Installation
 
-You can just download NissanConnect.class.php and require/include it, or use composer: require "gboudreau/nissan-connect-php": "dev-master".
+You can just download NissanConnect.class.php and require/include it, or use composer:
+
+    require "gboudreau/nissan-connect-php": "dev-master"
 
 ## Usage
 
 ```php
-require_once('NissanConnect.class.php');
+require_once 'NissanConnect.class.php';
 
 // All parameters except the first two (username & password) are optional; the default values are shown here
 $nissanConnect = new NissanConnect('you@something.com', 'your_password_here', 'America/New_York', NissanConnect::COUNTRY_US);
