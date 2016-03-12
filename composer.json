@@ -1,0 +1,19 @@
+{
+    "name": "gboudreau/nissan-connect-php",
+    "type": "library",
+    "description": "This is a simple library that will allow you to use the Nissan Connect (was Carwings) API to check on your Nissan LEAF, and start/stop climate control, or start charging.",
+    "keywords": ["api","nissan","LEAF","NissanConnect","carwings"],
+    "homepage": "https://github.com/gboudreau/nissan-connect-php",
+    "license": "GPLv3",
+    "authors": [
+        {
+            "name": "Guillaume Boudreau",
+            "email": "guillaume@pommepause.com",
+            "homepage": "https://www.pommepause.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.0"
+    }
+}
