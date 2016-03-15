@@ -23,8 +23,7 @@ $nissanConnect->debug = FALSE;
 $nissanConnect->maxWaitTime = 290;
 
 try {
-    $return_last_known_values = FALSE;
-    $result = $nissanConnect->getStatus($return_last_known_values);
+    $result = $nissanConnect->getStatus();
     var_dump($result);
     
     // Start charging
