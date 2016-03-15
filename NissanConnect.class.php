@@ -29,6 +29,10 @@ class NissanConnect {
     const ERROR_CODE_INVALID_RESPONSE = 405;
     const ERROR_CODE_NOT_JSON = 406;
     const ERROR_CODE_TIMEOUT = 408;
+    
+    const STATUS_QUERY_OPTION_NONE   = 0;
+    const STATUS_QUERY_OPTION_ASYNC  = 1;
+    const STATUS_QUERY_OPTION_CACHED = 2;
 
     /** @var int How long should we wait, before throwing an exception, when waiting for the car to execute a command. @see $waitForResult parameter in the various function calls. */
     public $maxWaitTime = 290;
@@ -110,16 +114,21 @@ class NissanConnect {
     /**
      * Get battery & climate control status.
      *
-     * @param bool $cached Should we return the result of the last query, instead of making a new query?
+     * @param int $option Specify one of the STATUS_QUERY_OPTION_* constant.
+     *
      * @return stdClass
      * @throws Exception
      */
-    public function getStatus($cached=FALSE) {
+    public function getStatus($option = static::STATUS_QUERY_OPTION_NONE) {
         $this->prepare();
-        if (!$cached) {
+        if ($option != static::STATUS_QUERY_OPTION_CACHED) {
             $this->sendRequest('BatteryStatusCheckRequest.php');
-            $this->waitUntilSuccess('BatteryStatusCheckResultRequest.php');
         }
+        if ($option == static::STATUS_QUERY_OPTION_ASYNC) {
+            return NULL;
+        }
+
+        $this->waitUntilSuccess('BatteryStatusCheckResultRequest.php');
         
         $allowed_op_result = array('START', 'START_BATTERY', 'FINISH');
 
