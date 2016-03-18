@@ -45,6 +45,9 @@ class NissanConnect {
     private $resultKey = NULL;
     private $config = NULL;
 
+    /** @var boolean Should we retry to login, if the API return us a 404 error. */
+    private $shouldRetry = TRUE;
+
     /**
      * NissanConnect constructor.
      *
@@ -219,15 +222,15 @@ class NissanConnect {
     }
 
     /**
-     * Load the VIN and DCMID values, either from disk, if they were saved there by a previous call, or from the remote API, if not.
+     * Load the VIN, DCMID and CustomSessionID values, either from disk, if they were saved there by a previous call, or from the remote API, if not.
      *
      * @throws Exception
      */
-    private function prepare() {
-        if (empty($this->config->vin) || empty($this->config->dcmID)) {
+    private function prepare($skip_local_file = FALSE) {
+        if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID)) {
             $uid = md5($this->config->username);
             $local_storage_file = "/tmp/.nissan-connect-storage-$uid.json";
-            if (file_exists($local_storage_file)) {
+            if (file_exists($local_storage_file) && !$skip_local_file) {
                 $json = @json_decode(file_get_contents($local_storage_file));
                 $this->config->vin = @$json->vin;
                 $this->config->dcmID = @$json->dcmid;
@@ -313,6 +316,13 @@ class NissanConnect {
                 $this->debug("Found resultKey in response: $this->resultKey");
             }
             if ($json->status !== 200) {
+                if ($json->status == 404 && $this->shouldRetry) {
+                    $this->debug("Request for '$path' failed. Response received: " . json_encode($json) . " Will retry.");
+                    $this->shouldRetry = FALSE; // Don't loop infinitely!
+                    $this->config->customSessionID = NULL;
+                    $this->prepare(TRUE);
+                    return $this->sendRequest($path, $params);
+                }
                 throw new Exception("Request for '$path' failed. Response received: " . json_encode($json), $json->status);
             }
             $this->debug("Response: " . json_encode($json));
