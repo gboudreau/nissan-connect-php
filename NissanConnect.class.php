@@ -119,7 +119,7 @@ class NissanConnect {
      * @return stdClass
      * @throws Exception
      */
-    public function getStatus($option = static::STATUS_QUERY_OPTION_NONE) {
+    public function getStatus($option = 0) {
         $this->prepare();
         if ($option != static::STATUS_QUERY_OPTION_CACHED) {
             $this->sendRequest('BatteryStatusCheckRequest.php');
