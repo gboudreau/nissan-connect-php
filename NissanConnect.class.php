@@ -40,7 +40,7 @@ class NissanConnect {
     /** @var boolean Enable to echo debugging information into the PHP error log. */
     public $debug = FALSE;
 
-    private $baseURL = 'https://gdcportalgw.its-mo.com/orchestration_1111/gdc/';
+    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_0307C/gdc/';
 
     private $resultKey = NULL;
     private $config = NULL;
@@ -63,6 +63,9 @@ class NissanConnect {
         $this->config->country = strtoupper($country);
         $this->config->vin = $vin;
         $this->config->dcmID = $dcmID;
+        $this->config->initialAppStrings = 'geORNtsZe5I4lRGjG9GZiA'; // Hard-coded in mobile apps?
+        $this->config->basePRM = 'uyI5Dj9g8VCOFDnBRUbr3g'; // Will be overwritten with the response from the InitialApp.php call
+        $this->config->customSessionID = ''; // Empty until login completes
     }
 
     /**
@@ -123,13 +126,14 @@ class NissanConnect {
         $this->prepare();
         if ($option != static::STATUS_QUERY_OPTION_CACHED) {
             $this->sendRequest('BatteryStatusCheckRequest.php');
+            if ($option != static::STATUS_QUERY_OPTION_ASYNC) {
+                $this->waitUntilSuccess('BatteryStatusCheckResultRequest.php');
+            }
         }
         if ($option == static::STATUS_QUERY_OPTION_ASYNC) {
             return NULL;
         }
 
-        $this->waitUntilSuccess('BatteryStatusCheckResultRequest.php');
-        
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
         $this->_checkStatusResult($response, 'BatteryStatusRecords');
 
@@ -227,13 +231,14 @@ class NissanConnect {
                 $json = @json_decode(file_get_contents($local_storage_file));
                 $this->config->vin = @$json->vin;
                 $this->config->dcmID = @$json->dcmid;
+                $this->config->customSessionID = @$json->sessionid;
             }
-            if (empty($this->config->vin) || empty($this->config->dcmID)) {
+            if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID)) {
                 $this->login();
-                file_put_contents($local_storage_file, json_encode(array('vin' => $this->config->vin, 'dcmid' => $this->config->dcmID)));
-                $this->debug("Saving DCMID and VIN into local file $local_storage_file");
+                file_put_contents($local_storage_file, json_encode(array('vin' => $this->config->vin, 'dcmid' => $this->config->dcmID, 'sessionid' => $this->config->customSessionID)));
+                $this->debug("Saving DCMID, VIN and CustomSessionID into local file $local_storage_file");
             } else {
-                $this->debug("Using DCMID and VIN found in local file $local_storage_file");
+                $this->debug("Using DCMID, VIN and CustomSessionID found in local file $local_storage_file");
             }
         }
     }
@@ -244,17 +249,27 @@ class NissanConnect {
      * @throws Exception
      */
     private function login() {
-        $params = array('Password' => $this->config->password);
+        $result = $this->sendRequest('InitialApp.php');
+        if (empty($result->baseprm)) {
+            throw new Exception("Failed to get 'baseprm' using InitialApp.php. Response: " . json_encode($result), static::ERROR_CODE_LOGIN_FAILED);
+        }
+        $this->config->basePRM = $result->baseprm;
+
+        $encrypted_encoded_password = static::encryptPassword($this->config->password, $this->config->basePRM);
+        $params = array('UserId' => $this->config->username, 'Password' => $encrypted_encoded_password);
         $result = $this->sendRequest('UserLoginRequest.php', $params);
 
         if (isset($result->CustomerInfo->VehicleInfo->DCMID)) {
             $this->config->dcmID = $result->CustomerInfo->VehicleInfo->DCMID;
         }
+        if (isset($result->VehicleInfoList->vehicleInfo[0]->custom_sessionid)) {
+            $this->config->customSessionID = $result->VehicleInfoList->vehicleInfo[0]->custom_sessionid;
+        }
         if (isset($result->CustomerInfo->VehicleInfo->VIN)) {
             $this->config->vin = $result->CustomerInfo->VehicleInfo->VIN;
         }
-        if (empty($this->config->vin) || empty($this->config->dcmID)) {
-            throw new Exception("Login failed, or failed to find car VIN and DCMID in response of login request: " . json_encode($result), static::ERROR_CODE_LOGIN_FAILED);
+        if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID)) {
+            throw new Exception("Login failed, or failed to find car VIN, DCMID or custom_sessionid in response of login request: " . json_encode($result), static::ERROR_CODE_LOGIN_FAILED);
         }
     }
 
@@ -267,23 +282,21 @@ class NissanConnect {
      * @throws Exception
      */
     private function sendRequest($path, $params = array()) {
-        $params['UserId'] = $this->config->username;
+        $params['custom_sessionid'] = $this->config->customSessionID;
+        $params['initial_app_strings'] = $this->config->initialAppStrings;
         $params['RegionCode'] = $this->config->country;
         $params['lg'] = 'en-US';
         $params['DCMID'] = $this->config->dcmID;
         $params['VIN'] = $this->config->vin;
         $params['tz'] = $this->config->tz;
 
-        $encoded_params = array();
-        foreach ($params as $k => $v) {
-            $encoded_params[] = "$k=" . urlencode($v);
-        }
+        $url = $this->baseURL . $path;
 
-        $url = $this->baseURL . $path . '?' . implode('&', $encoded_params);
-
-        $this->debug("Request: $url");
+        $this->debug("Request: POST $url " . json_encode($params));
 
         $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         curl_setopt($ch, CURLOPT_HEADER, FALSE);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 
@@ -346,5 +359,21 @@ class NissanConnect {
             $date = date('Y-m-d H:i:s');
             error_log("[$date] [NissanConnect] $log");
         }
+    }
+
+    private static function encryptPassword($password, $key) {
+        $size = @call_user_func('mcrypt_get_block_size', MCRYPT_BLOWFISH);
+        if (empty($size)) {
+            $size = @call_user_func('mcrypt_get_block_size', MCRYPT_BLOWFISH, MCRYPT_MODE_ECB);
+        }
+        $password = static::pkcs5_pad($password, $size);
+        $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_BLOWFISH, MCRYPT_MODE_ECB), MCRYPT_RAND);
+        $encrypted_password = mcrypt_encrypt(MCRYPT_BLOWFISH, $key, $password, MCRYPT_MODE_ECB, $iv);
+        return base64_encode($encrypted_password);
+    }
+
+    private static function pkcs5_pad($text, $blocksize) {
+        $pad = $blocksize - (strlen($text) % $blocksize);
+        return $text . str_repeat(chr($pad), $pad);
     }
 }
