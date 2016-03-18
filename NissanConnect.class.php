@@ -130,8 +130,6 @@ class NissanConnect {
 
         $this->waitUntilSuccess('BatteryStatusCheckResultRequest.php');
         
-        $allowed_op_result = array('START', 'START_BATTERY', 'FINISH');
-
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
         $this->_checkStatusResult($response, 'BatteryStatusRecords');
 
