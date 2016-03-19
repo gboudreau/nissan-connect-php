@@ -34,6 +34,9 @@ class NissanConnect {
     const STATUS_QUERY_OPTION_ASYNC  = 1;
     const STATUS_QUERY_OPTION_CACHED = 2;
 
+    const ENCRYPTION_OPTION_MCRYPT     = 0;
+    const ENCRYPTION_OPTION_WEBSERVICE = 1;
+
     /** @var int How long should we wait, before throwing an exception, when waiting for the car to execute a command. @see $waitForResult parameter in the various function calls. */
     public $maxWaitTime = 290;
 
@@ -51,24 +54,24 @@ class NissanConnect {
     /**
      * NissanConnect constructor.
      *
-     * @param string $username The username (or email address) to use to login on the remote API.
-     * @param string $password The password to use to login on the remote API.
-     * @param string $tz The timezone to use for dates. Default value: America/New_York
-     * @param string $country One of the COUNTRY_* constants available in this class. Default value: COUNTRY_US
-     * @param string $vin If known, you can provide the VIN of the vehicle.  If not specified, it will be loaded by a call to the login API endpoint.
-     * @param string $dcmID If known, you can provide the DCMID to use for API calls. If not specified, it will be loaded by a call to the login API endpoint.
+     * @param string $username         The username (or email address) to use to login on the remote API.
+     * @param string $password         The password to use to login on the remote API.
+     * @param string $tz               The timezone to use for dates. Default value: America/New_York
+     * @param string $country          One of the COUNTRY_* constants available in this class. Default value: COUNTRY_US
+     * @param int    $encryptionOption Use ENCRYPTION_OPTION_MCRYPT (the default) if you can; otherwise, use ENCRYPTION_OPTION_WEBSERVICE, which will use a remote web-service to encrypt your password.
      */
-    public function __construct($username, $password, $tz = 'America/New_York', $country = NissanConnect::COUNTRY_US, $vin = NULL, $dcmID = NULL) {
+    public function __construct($username, $password, $tz = 'America/New_York', $country = NissanConnect::COUNTRY_US, $encryptionOption = 0) {
         $this->config = new stdClass();
         $this->config->username = $username;
         $this->config->password = $password;
         $this->config->tz = $tz;
         $this->config->country = strtoupper($country);
-        $this->config->vin = $vin;
-        $this->config->dcmID = $dcmID;
+        $this->config->vin = '';
+        $this->config->dcmID = '';
         $this->config->initialAppStrings = 'geORNtsZe5I4lRGjG9GZiA'; // Hard-coded in mobile apps?
         $this->config->basePRM = 'uyI5Dj9g8VCOFDnBRUbr3g'; // Will be overwritten with the response from the InitialApp.php call
         $this->config->customSessionID = ''; // Empty until login completes
+        $this->config->encryptionOption = $encryptionOption;
     }
 
     /**
@@ -258,7 +261,7 @@ class NissanConnect {
         }
         $this->config->basePRM = $result->baseprm;
 
-        $encrypted_encoded_password = static::encryptPassword($this->config->password, $this->config->basePRM);
+        $encrypted_encoded_password = $this->encryptPassword($this->config->password, $this->config->basePRM);
         $params = array('UserId' => $this->config->username, 'Password' => $encrypted_encoded_password);
         $result = $this->sendRequest('UserLoginRequest.php', $params);
 
@@ -371,7 +374,10 @@ class NissanConnect {
         }
     }
 
-    private static function encryptPassword($password, $key) {
+    private function encryptPassword($password, $key) {
+        if ($this->config->encryptionOption == static::ENCRYPTION_OPTION_WEBSERVICE) {
+            return trim(file_get_contents("https://dataproxy.pommepause.com/nissan-connect-encrypt.php?key=" . urlencode($key) . "&password=" . urlencode($password)));
+        }
         $size = @call_user_func('mcrypt_get_block_size', MCRYPT_BLOWFISH);
         if (empty($size)) {
             $size = @call_user_func('mcrypt_get_block_size', MCRYPT_BLOWFISH, MCRYPT_MODE_ECB);
