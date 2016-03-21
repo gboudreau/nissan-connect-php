@@ -53,6 +53,8 @@ object(stdClass)#9 (18) {
   bool(true)
   ["Charging"]=>
   bool(false)
+  ["ChargingMode"]=>
+  string(12) "NOT_CHARGING"
   ["BatteryCapacity"]=>
   int(12)
   ["BatteryRemainingAmount"]=>

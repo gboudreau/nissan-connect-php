@@ -151,7 +151,8 @@ class NissanConnect {
         $result->LastUpdated = date('Y-m-d H:i', strtotime($response->BatteryStatusRecords->OperationDateAndTime));
 
         $result->PluggedIn = ( $response->BatteryStatusRecords->PluginState != 'NOT_CONNECTED' );
-        $result->Charging = ( $response->BatteryStatusRecords->BatteryStatus->BatteryChargingStatus != 'NOT_CHARGING' );
+        $result->ChargingMode = $response->BatteryStatusRecords->BatteryStatus->BatteryChargingStatus;
+        $result->Charging = ( $result->ChargingMode != 'NOT_CHARGING' );
 
         $result->BatteryCapacity = (int) $response->BatteryStatusRecords->BatteryStatus->BatteryCapacity;
         if (!empty($response->BatteryStatusRecords->BatteryStatus->BatteryRemainingAmount)) {
