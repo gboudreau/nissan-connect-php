@@ -381,7 +381,7 @@ class NissanConnect {
             return trim(file_get_contents("https://dataproxy.pommepause.com/nissan-connect-encrypt.php?key=" . urlencode($key) . "&password=" . urlencode($password)));
         }
         if (!extension_loaded('mcrypt')) {
-           throw new Exception("Extension mcrypt not installed");
+           throw new Exception("mcrypt PHP extension is not available. Either use ENCRYPTION_OPTION_WEBSERVICE as the encryption option, to use a remote web-service to encrypt passwords, or better yet, install and enable the mcrypt extension.");
         }
         $size = @call_user_func('mcrypt_get_block_size', MCRYPT_BLOWFISH);
         if (empty($size)) {
