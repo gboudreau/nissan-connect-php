@@ -171,6 +171,12 @@ class NissanConnect {
         } else {
             $result->BatteryRemainingAmountkWH = NULL;
         }
+        # SOC = The percentage state of charge (don't work under 5%) -> API Answer is "SOC":{"Display":"---"}}
+        if (!empty($response->response->BatteryStatusRecords->BatteryStatus->SOC->Value)) {
+            $result->SOC =  $response->BatteryStatusRecords->BatteryStatus->SOC->Value;
+        } else {
+            $result->SOC = NULL;
+        }
 
         foreach (array('TimeRequiredToFull', 'TimeRequiredToFull200', 'TimeRequiredToFull200_6kW') as $var_name) {
             if (empty($response->BatteryStatusRecords->{$var_name}->HourRequiredToFull) && empty($response->BatteryStatusRecords->{$var_name}->MinutesRequiredToFull)) {
