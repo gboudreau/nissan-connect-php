@@ -172,7 +172,7 @@ class NissanConnect {
             $result->BatteryRemainingAmountkWH = NULL;
         }
         # SOC = The percentage state of charge (don't work under 5%) -> API Answer is "SOC":{"Display":"---"}}
-        if (!empty($response->response->BatteryStatusRecords->BatteryStatus->SOC->Value)) {
+        if (!empty($response->BatteryStatusRecords->BatteryStatus->SOC->Value)) {
             $result->SOC =  $response->BatteryStatusRecords->BatteryStatus->SOC->Value;
         } else {
             $result->SOC = NULL;
