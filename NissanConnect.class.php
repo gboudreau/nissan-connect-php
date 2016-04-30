@@ -215,7 +215,12 @@ class NissanConnect {
         }
 
 
-        if ($this->config->country == 'US') {
+        # Can be Null, under 15km
+        if (empty($response->BatteryStatusRecords->CruisingRangeAcOn)) {
+            $result->CruisingRangeAcOn = NULL;
+            $result->CruisingRangeUnit = NULL;
+            $result->CruisingRangeUnit = '---';
+        } elseif ($this->config->country == 'US') {
             $result->CruisingRangeAcOn = $response->BatteryStatusRecords->CruisingRangeAcOn * 0.000621371192;
             $result->CruisingRangeAcOff = $response->BatteryStatusRecords->CruisingRangeAcOff * 0.000621371192;
             $result->CruisingRangeUnit = 'miles';
