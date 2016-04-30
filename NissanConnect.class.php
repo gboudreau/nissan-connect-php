@@ -195,25 +195,6 @@ class NissanConnect {
                 $result->{$var_name}->Formatted .= $result->{$var_name}->Minutes . 'm ';
             }
         }
-        #TimeRequiredToFull_green_up -> estimate time for a Europe 220V 10A (Green Up plug)
-        if (empty($response->BatteryStatusRecords->TimeRequiredToFull->HourRequiredToFull) && empty($response->BatteryStatusRecords->{TimeRequiredToFull}->MinutesRequiredToFull)) {
-            $result->{TimeRequiredToFull_green_up} = NULL;
-        } else {
-            $_minutes_TimeRequiredToFull =   $response->BatteryStatusRecords->TimeRequiredToFull->HourRequiredToFull * 60 + $response->BatteryStatusRecords->TimeRequiredToFull->MinutesRequiredToFull ;
-            $_minutes_TimeRequiredToFull_green_up =  $_minutes_TimeRequiredToFull * 110 / 200;  # 110v to 200v
-            $result->TimeRequiredToFull_green_up = (object) array(
-                'Hours' => (int) ( $_minutes_TimeRequiredToFull_green_up / 60 ) ,
-                'Minutes' => (int) ( $_minutes_TimeRequiredToFull_green_up % 60 )
-            );
-            $result->TimeRequiredToFull_green_up->Formatted = '';
-            if (!empty($result->TimeRequiredToFull_green_up->Hours)) {
-                $result->TimeRequiredToFull_green_up->Formatted .= $result->TimeRequiredToFull_green_up->Hours . 'h ';
-            }
-            if (!empty($result->TimeRequiredToFull_green_up->Minutes)) {
-                $result->TimeRequiredToFull_green_up->Formatted .= $result->TimeRequiredToFull_green_up->Minutes . 'm ';
-            }
-        }
-
 
         # Can be Null, under 15km
         if (empty($response->BatteryStatusRecords->CruisingRangeAcOn)) {
