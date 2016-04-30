@@ -195,6 +195,25 @@ class NissanConnect {
                 $result->{$var_name}->Formatted .= $result->{$var_name}->Minutes . 'm ';
             }
         }
+        #TimeRequiredToFull_green_up -> estimate time for a Europe 220V 10A (Green Up plug)
+        if (empty($response->BatteryStatusRecords->TimeRequiredToFull->HourRequiredToFull) && empty($response->BatteryStatusRecords->{TimeRequiredToFull}->MinutesRequiredToFull)) {
+            $result->{TimeRequiredToFull_green_up} = NULL;
+        } else {
+            $_hours_TimeRequiredToFull =   $response->BatteryStatusRecords->TimeRequiredToFull->HourRequiredToFull + 60 *  $response->BatteryStatusRecords->TimeRequiredToFull->MinutesRequiredToFull ;
+            $_hours_TimeRequiredToFull_green_up =  $_hours_TimeRequiredToFull * 100 / 220;
+            $result->TimeRequiredToFull_green_up = (object) array(
+                'Hours' => (int) $_hours_TimeRequiredToFull_green_up,
+                'Minutes' => (int) $_hours_TimeRequiredToFull_green_up ^ 60
+            );
+            $result->TimeRequiredToFull_green_up->Formatted = '';
+            if (!empty($result->TimeRequiredToFull_green_up->Hours)) {
+                $result->TimeRequiredToFull_green_up->Formatted .= $result->TimeRequiredToFull_green_up->Hours . 'h ';
+            }
+            if (!empty($result->TimeRequiredToFull_green_up->Minutes)) {
+                $result->TimeRequiredToFull_green_up->Formatted .= $result->TimeRequiredToFull_green_up->Minutes . 'm ';
+            }
+        }
+
 
         if ($this->config->country == 'US') {
             $result->CruisingRangeAcOn = $response->BatteryStatusRecords->CruisingRangeAcOn * 0.000621371192;
