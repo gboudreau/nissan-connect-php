@@ -45,6 +45,7 @@ class NissanConnect {
     public $debug = FALSE;
 
     private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_0307C/gdc/';
+    //private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_0323C/gdc/';
 
     private $resultKey = NULL;
     private $config = NULL;
@@ -144,7 +145,7 @@ class NissanConnect {
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
         $this->_checkStatusResult($response, 'BatteryStatusRecords');
 
-        $response2 = $this->sendRequest('RemoteACRecordsRequest.php');
+        $response2 = $this->sendRequest('RemoteACRecordsRequest.php', ['TimeFrom' => date('Y-m-d\TH:i:s')]);
         $this->_checkStatusResult($response2, 'RemoteACRecords');
 
         $result = new stdClass();
