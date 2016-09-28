@@ -44,8 +44,7 @@ class NissanConnect {
     /** @var boolean Enable to echo debugging information into the PHP error log. */
     public $debug = FALSE;
 
-    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_0307C/gdc/';
-    //private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_0323C/gdc/';
+    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_0323C/gdc/';
 
     private $resultKey = NULL;
     private $config = NULL;
@@ -70,6 +69,7 @@ class NissanConnect {
         $this->config->country = strtoupper($country);
         $this->config->vin = '';
         $this->config->dcmID = '';
+        $this->config->UserVehicleBoundTime = '';
         $this->config->initialAppStrings = 'geORNtsZe5I4lRGjG9GZiA'; // Hard-coded in mobile apps?
         $this->config->basePRM = 'uyI5Dj9g8VCOFDnBRUbr3g'; // Will be overwritten with the response from the InitialApp.php call
         $this->config->customSessionID = ''; // Empty until login completes
@@ -145,7 +145,7 @@ class NissanConnect {
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
         $this->_checkStatusResult($response, 'BatteryStatusRecords');
 
-        $response2 = $this->sendRequest('RemoteACRecordsRequest.php', array('TimeFrom' => date('Y-m-d\TH:i:s')));
+        $response2 = $this->sendRequest('RemoteACRecordsRequest.php', array('TimeFrom' => gmdate('Y-m-d\TH:i:s', strtotime($this->config->UserVehicleBoundTime))));
         $this->_checkStatusResult($response2, 'RemoteACRecords');
 
         $result = new stdClass();
@@ -239,12 +239,12 @@ class NissanConnect {
     }
 
     /**
-     * Load the VIN, DCMID and CustomSessionID values, either from disk, if they were saved there by a previous call, or from the remote API, if not.
+     * Load the VIN, DCMID, UserVehicleBoundTime and CustomSessionID values, either from disk, if they were saved there by a previous call, or from the remote API, if not.
      *
      * @throws Exception
      */
     private function prepare($skip_local_file = FALSE) {
-        if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID)) {
+        if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID) || empty($this->config->UserVehicleBoundTime)) {
             $uid = md5($this->config->username);
             $local_storage_file = "/tmp/.nissan-connect-storage-$uid.json";
             if (file_exists($local_storage_file) && !$skip_local_file) {
@@ -252,13 +252,14 @@ class NissanConnect {
                 $this->config->vin = @$json->vin;
                 $this->config->dcmID = @$json->dcmid;
                 $this->config->customSessionID = @$json->sessionid;
+                $this->config->UserVehicleBoundTime = @$json->UserVehicleBoundTime;
             }
-            if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID)) {
+            if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID) || empty($this->config->UserVehicleBoundTime)) {
                 $this->login();
-                file_put_contents($local_storage_file, json_encode(array('vin' => $this->config->vin, 'dcmid' => $this->config->dcmID, 'sessionid' => $this->config->customSessionID)));
-                $this->debug("Saving DCMID, VIN and CustomSessionID into local file $local_storage_file");
+                file_put_contents($local_storage_file, json_encode(array('vin' => $this->config->vin, 'dcmid' => $this->config->dcmID, 'sessionid' => $this->config->customSessionID, 'UserVehicleBoundTime' => $this->config->UserVehicleBoundTime)));
+                $this->debug("Saving DCMID, VIN, UserVehicleBoundTime and CustomSessionID into local file $local_storage_file");
             } else {
-                $this->debug("Using DCMID, VIN and CustomSessionID found in local file $local_storage_file");
+                $this->debug("Using DCMID, VIN, UserVehicleBoundTime and CustomSessionID found in local file $local_storage_file");
             }
         }
     }
@@ -282,14 +283,17 @@ class NissanConnect {
         if (isset($result->CustomerInfo->VehicleInfo->DCMID)) {
             $this->config->dcmID = $result->CustomerInfo->VehicleInfo->DCMID;
         }
+        if (isset($result->CustomerInfo->VehicleInfo->UserVehicleBoundTime)) {
+            $this->config->UserVehicleBoundTime = $result->CustomerInfo->VehicleInfo->UserVehicleBoundTime;
+        }
         if (isset($result->VehicleInfoList->vehicleInfo[0]->custom_sessionid)) {
             $this->config->customSessionID = $result->VehicleInfoList->vehicleInfo[0]->custom_sessionid;
         }
         if (isset($result->CustomerInfo->VehicleInfo->VIN)) {
             $this->config->vin = $result->CustomerInfo->VehicleInfo->VIN;
         }
-        if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID)) {
-            throw new Exception("Login failed, or failed to find car VIN, DCMID or custom_sessionid in response of login request: " . json_encode($result), static::ERROR_CODE_LOGIN_FAILED);
+        if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID) || empty($this->config->UserVehicleBoundTime)) {
+            throw new Exception("Login failed, or failed to find car VIN, DCMID, UserVehicleBoundTime or custom_sessionid in response of login request: " . json_encode($result), static::ERROR_CODE_LOGIN_FAILED);
         }
     }
 
