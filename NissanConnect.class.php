@@ -145,7 +145,7 @@ class NissanConnect {
         $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
         $this->_checkStatusResult($response, 'BatteryStatusRecords');
 
-        $response2 = $this->sendRequest('RemoteACRecordsRequest.php', ['TimeFrom' => date('Y-m-d\TH:i:s')]);
+        $response2 = $this->sendRequest('RemoteACRecordsRequest.php', array('TimeFrom' => date('Y-m-d\TH:i:s')));
         $this->_checkStatusResult($response2, 'RemoteACRecords');
 
         $result = new stdClass();
