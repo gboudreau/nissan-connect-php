@@ -309,6 +309,19 @@ class NissanConnect {
      * @return stdClass JSON-decoded response from API.
      * @throws Exception
      */
+    private function remove_personnal_info($params) {
+        if (isset($params['VIN'])) {
+                $params['VIN'] = "VIM_REMOVED";
+                }
+        if (isset($params['Password'])) {
+                $params['Password'] = "Password_removed";
+                }
+        if (isset($params['UserId'])) {
+                $params['UserId'] = "userid_removed";
+                }
+        return $params;
+        }
+
     private function sendRequest($path, $params = array()) {
         $params['custom_sessionid'] = $this->config->customSessionID;
         $params['initial_app_strings'] = $this->config->initialAppStrings;
@@ -320,7 +333,7 @@ class NissanConnect {
 
         $url = $this->baseURL . $path;
 
-        $this->debug("Request: POST $url " . json_encode($params));
+        $this->debug("Request: POST $url " . json_encode($this->remove_personnal_info($params)));
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, TRUE);
