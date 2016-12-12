@@ -289,6 +289,9 @@ class NissanConnect {
         if (isset($result->VehicleInfoList->vehicleInfo[0]->custom_sessionid)) {
             $this->config->customSessionID = $result->VehicleInfoList->vehicleInfo[0]->custom_sessionid;
         }
+        if (empty($this->config->customSessionID) && isset($result->vehicleInfo[0]->custom_sessionid)) {
+            $this->config->customSessionID = $result->vehicleInfo[0]->custom_sessionid;
+        }
         if (isset($result->CustomerInfo->VehicleInfo->VIN)) {
             $this->config->vin = $result->CustomerInfo->VehicleInfo->VIN;
         }
