@@ -14,8 +14,8 @@ You can just download NissanConnect.class.php and require/include it, or use com
 require_once 'NissanConnect.class.php';
 
 // All parameters except the first two (username & password) are optional; the default values are shown here
-// If you don't have the mcrypt PHP extension, you can use a web-service to encrypt your password. Simply change the last parameter to NissanConnect::ENCRYPTION_OPTION_WEBSERVICE
-$nissanConnect = new NissanConnect('you@something.com', 'your_password_here', 'America/New_York', NissanConnect::COUNTRY_US, NissanConnect::ENCRYPTION_OPTION_MCRYPT);
+// If you can't use the openssl_encrypt() function (very unlikely), you can use a web-service to encrypt your password. Simply change the last parameter to NissanConnect::ENCRYPTION_OPTION_WEBSERVICE
+$nissanConnect = new NissanConnect('you@something.com', 'your_password_here', 'America/New_York', NissanConnect::COUNTRY_US, NissanConnect::ENCRYPTION_OPTION_OPENSSL);
 
 // Change to TRUE to log debugging information into your PHP error log
 $nissanConnect->debug = FALSE;

@@ -15,8 +15,5 @@
     ],
     "require": {
         "php": ">=5.0"
-    },
-    "suggest": {
-        "ext-mcrypt": "*"
     }
 }

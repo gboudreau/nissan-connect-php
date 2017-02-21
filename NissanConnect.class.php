@@ -35,7 +35,7 @@ class NissanConnect {
     const STATUS_QUERY_OPTION_ASYNC  = 1;
     const STATUS_QUERY_OPTION_CACHED = 2;
 
-    const ENCRYPTION_OPTION_MCRYPT     = 0;
+    const ENCRYPTION_OPTION_OPENSSL    = 0;
     const ENCRYPTION_OPTION_WEBSERVICE = 1;
 
     /* @var int How long should we wait, before throwing an exception, when waiting for the car to execute a command. @see $waitForResult parameter in the various function calls. */
@@ -59,7 +59,7 @@ class NissanConnect {
      * @param string $password         The password to use to login on the remote API.
      * @param string $tz               The timezone to use for dates. Default value: America/New_York
      * @param string $country          One of the COUNTRY_* constants available in this class. Default value: COUNTRY_US
-     * @param int    $encryptionOption Use ENCRYPTION_OPTION_MCRYPT (the default) if you can; otherwise, use ENCRYPTION_OPTION_WEBSERVICE, which will use a remote web-service to encrypt your password.
+     * @param int    $encryptionOption Use ENCRYPTION_OPTION_OPENSSL (the default) if you can; otherwise, use ENCRYPTION_OPTION_WEBSERVICE, which will use a remote web-service to encrypt your password.
      */
     public function __construct($username, $password, $tz = 'America/New_York', $country = NissanConnect::COUNTRY_US, $encryptionOption = 0) {
         $this->config = new stdClass();
@@ -409,21 +409,11 @@ class NissanConnect {
         if ($this->config->encryptionOption == static::ENCRYPTION_OPTION_WEBSERVICE) {
             return trim(file_get_contents("https://dataproxy.pommepause.com/nissan-connect-encrypt.php?key=" . urlencode($key) . "&password=" . urlencode($password)));
         }
-        if (!extension_loaded('mcrypt')) {
-           throw new Exception("mcrypt PHP extension is not available. Either use ENCRYPTION_OPTION_WEBSERVICE as the encryption option, to use a remote web-service to encrypt passwords, or better yet, install and enable the mcrypt extension.");
+        if (!function_exists('openssl_encrypt')) {
+            throw new Exception("OpenSSL support in PHP is not available. Either use ENCRYPTION_OPTION_WEBSERVICE as the encryption option, to use a remote web-service to encrypt passwords, or compile PHP using --with-openssl.");
         }
-        $size = @call_user_func('mcrypt_get_block_size', MCRYPT_BLOWFISH);
-        if (empty($size)) {
-            $size = @call_user_func('mcrypt_get_block_size', MCRYPT_BLOWFISH, MCRYPT_MODE_ECB);
-        }
-        $password = static::pkcs5_pad($password, $size);
-        $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_BLOWFISH, MCRYPT_MODE_ECB), MCRYPT_RAND);
-        $encrypted_password = mcrypt_encrypt(MCRYPT_BLOWFISH, $key, $password, MCRYPT_MODE_ECB, $iv);
+        $method = 'bf-ecb';
+        $encrypted_password = openssl_encrypt($password, $method, $key, TRUE);
         return base64_encode($encrypted_password);
-    }
-
-    private static function pkcs5_pad($text, $blocksize) {
-        $pad = $blocksize - (strlen($text) % $blocksize);
-        return $text . str_repeat(chr($pad), $pad);
     }
 }
