@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2016 Guillaume Boudreau
+Copyright 2016-2017 Guillaume Boudreau
 Source: https://github.com/gboudreau/nissan-connect-php
 
 This class is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ class NissanConnect {
     const ERROR_CODE_INVALID_RESPONSE = 405;
     const ERROR_CODE_NOT_JSON = 406;
     const ERROR_CODE_TIMEOUT = 408;
-    
+
     const STATUS_QUERY_OPTION_NONE   = 0;
     const STATUS_QUERY_OPTION_ASYNC  = 1;
     const STATUS_QUERY_OPTION_CACHED = 2;
@@ -38,10 +38,10 @@ class NissanConnect {
     const ENCRYPTION_OPTION_MCRYPT     = 0;
     const ENCRYPTION_OPTION_WEBSERVICE = 1;
 
-    /** @var int How long should we wait, before throwing an exception, when waiting for the car to execute a command. @see $waitForResult parameter in the various function calls. */
+    /* @var int How long should we wait, before throwing an exception, when waiting for the car to execute a command. @see $waitForResult parameter in the various function calls. */
     public $maxWaitTime = 290;
 
-    /** @var boolean Enable to echo debugging information into the PHP error log. */
+    /* @var boolean Enable to echo debugging information into the PHP error log. */
     public $debug = FALSE;
 
     private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_0323C/gdc/';
@@ -49,7 +49,7 @@ class NissanConnect {
     private $resultKey = NULL;
     private $config = NULL;
 
-    /** @var boolean Should we retry to login, if the API return us a 404 error. */
+    /* @var boolean Should we retry to login, if the API return us a 404 error. */
     private $shouldRetry = TRUE;
 
     /**
@@ -80,10 +80,11 @@ class NissanConnect {
      * Start the Climate Control.
      *
      * @param bool $waitForResult Should we wait until the command result is known, before returning? Enabling this will wait until the car executed the command, and returned the response, which can sometimes take a few minutes.
+     *
      * @return stdClass
      * @throws Exception
      */
-    public function startClimateControl($waitForResult=FALSE) {
+    public function startClimateControl($waitForResult = FALSE) {
         $this->prepare();
         $result = $this->sendRequest('ACRemoteRequest.php');
         if ($waitForResult) {
@@ -97,10 +98,11 @@ class NissanConnect {
      * Stop the Climate Control.
      *
      * @param bool $waitForResult Should we wait until the command result is known, before returning? Enabling this will wait until the car executed the command, and returned the response, which can sometimes take a few minutes.
+     *
      * @return stdClass
      * @throws Exception
      */
-    public function stopClimateControl($waitForResult=FALSE) {
+    public function stopClimateControl($waitForResult = FALSE) {
         $this->prepare();
         $result = $this->sendRequest('ACRemoteOffRequest.php');
         if ($waitForResult) {
@@ -172,7 +174,7 @@ class NissanConnect {
         } else {
             $result->BatteryRemainingAmountkWH = NULL;
         }
-        # SOC = The percentage state of charge (don't work under 5%) -> API Answer is "SOC":{"Display":"---"}}
+        // SOC = The percentage state of charge (don't work under 5%) -> API Answer is "SOC":{"Display":"---"}}
         if (!empty($response->BatteryStatusRecords->BatteryStatus->SOC->Value)) {
             $result->SOC =  $response->BatteryStatusRecords->BatteryStatus->SOC->Value;
         } else {
@@ -197,7 +199,7 @@ class NissanConnect {
             }
         }
 
-        # Can be Null, under 15km
+        // Can be Null, under 15km
         if (empty($response->BatteryStatusRecords->CruisingRangeAcOn)) {
             $result->CruisingRangeAcOn = NULL;
             $result->CruisingRangeUnit = NULL;
@@ -224,7 +226,7 @@ class NissanConnect {
 
         return $result;
     }
-    
+
     private function _checkStatusResult($response, $what) {
         $allowed_op_result = array('START', 'START_BATTERY', 'FINISH');
         if (empty($response->{$what})) {
@@ -241,6 +243,9 @@ class NissanConnect {
     /**
      * Load the VIN, DCMID, UserVehicleBoundTime and CustomSessionID values, either from disk, if they were saved there by a previous call, or from the remote API, if not.
      *
+     * @param bool $skip_local_file Should we skip loading the cached information from the local file, and force a login to obtain them.
+     *
+     * @return void
      * @throws Exception
      */
     private function prepare($skip_local_file = FALSE) {
@@ -267,6 +272,7 @@ class NissanConnect {
     /**
      * Login using the user's email address and password, to get the DCMID value needed to make subsequent API calls.
      *
+     * @return void
      * @throws Exception
      */
     private function login() {
@@ -303,8 +309,9 @@ class NissanConnect {
     /**
      * Send an HTTP GET request to the specified script, and return the JSON-decoded result.
      *
-     * @param String $path Script to send the request to.
-     * @param array $params Query parameters to send with the request.
+     * @param string $path   Script to send the request to.
+     * @param array  $params Query parameters to send with the request.
+     *
      * @return stdClass JSON-decoded response from API.
      * @throws Exception
      */
@@ -356,11 +363,12 @@ class NissanConnect {
         throw new Exception("Non-JSON response received for request to '$path'. Response received: " . json_encode($result), static::ERROR_CODE_NOT_JSON);
     }
 
-    /** @noinspection PhpInconsistentReturnPointsInspection
-     *
+    /* @noinspection PhpInconsistentReturnPointsInspection */
+    /**
      * Wait until the previously-execute command completes. This will wait until the car executed the command, and returned the response, which can sometimes take a few minutes.
      *
      * @param string $path Script to use to query the server to know if the operation completed, or not yet.
+     *
      * @return stdClass
      * @throws Exception
      */
@@ -386,7 +394,9 @@ class NissanConnect {
     /**
      * Log debugging information to the PHP error log.
      *
-     * @param String $log
+     * @param String $log Text to log.
+     *
+     * @return void
      */
     private function debug($log) {
         if ($this->debug) {
