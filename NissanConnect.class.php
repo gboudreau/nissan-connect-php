@@ -44,7 +44,7 @@ class NissanConnect {
     /* @var boolean Enable to echo debugging information into the PHP error log. */
     public $debug = FALSE;
 
-    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_0323C/gdc/';
+    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_160803A/gdc/';
 
     private $resultKey = NULL;
     private $config = NULL;
@@ -347,7 +347,7 @@ class NissanConnect {
                 $this->debug("Found resultKey in response: $this->resultKey");
             }
             if ($json->status !== 200) {
-                if ($json->status == 404 && $this->shouldRetry) {
+                if (($json->status == 401 || $json->status == 404) && $this->shouldRetry) {
                     $this->debug("Request for '$path' failed. Response received: " . json_encode($json) . " Will retry.");
                     $this->shouldRetry = FALSE; // Don't loop infinitely!
                     $this->config->customSessionID = NULL;
