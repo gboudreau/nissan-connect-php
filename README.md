@@ -91,3 +91,7 @@ object(stdClass)#9 (18) {
 ## Acknowledgements
 
 Thanks to [Joshua Perry](https://github.com/joshperry) for his [Carwings protocol reference](https://github.com/joshperry/carwings) which I used as a reference to refactor my [One-click access to LEAF](https://github.com/gboudreau/LEAF_Carwings_EasyAccess) by creating this class.
+
+Developed mainly using a free open-source license of  
+![PHPStorm](https://d3uepj124s5rcx.cloudfront.net/items/0V0z2p0e0K1D0F3t2r1P/logo_PhpStorm.png)  
+kindly provided by [JetBrains](http://www.jetbrains.com/). Thanks guys!
