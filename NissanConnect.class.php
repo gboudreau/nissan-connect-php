@@ -148,7 +148,6 @@ class NissanConnect {
         $this->_checkStatusResult($response, 'BatteryStatusRecords');
 
         $response2 = $this->sendRequest('RemoteACRecordsRequest.php', array('TimeFrom' => gmdate('Y-m-d\TH:i:s', strtotime($this->config->UserVehicleBoundTime))));
-        $this->_checkStatusResult($response2, 'RemoteACRecords');
 
         $result = new stdClass();
 
@@ -214,15 +213,27 @@ class NissanConnect {
             $result->CruisingRangeUnit = 'km';
         }
 
-        $result->RemoteACRunning = (($response2->RemoteACRecords->PluginState == 'CONNECTED' || $response2->RemoteACRecords->OperationResult == 'START_BATTERY') && $response2->RemoteACRecords->RemoteACOperation != 'STOP');
-        $result->RemoteACLastChanged = date('Y-m-d H:i', strtotime($response2->RemoteACRecords->ACStartStopDateAndTime));
+        $result->RemoteACRunning = ((@$response2->RemoteACRecords->PluginState == 'CONNECTED' || @$response2->RemoteACRecords->OperationResult == 'START_BATTERY') && @$response2->RemoteACRecords->RemoteACOperation != 'STOP');
+        if (isset($response2->RemoteACRecords->ACStartStopDateAndTime)) {
+            $result->RemoteACLastChanged = date('Y-m-d H:i', strtotime($response2->RemoteACRecords->ACStartStopDateAndTime));
+        } else {
+            $result->RemoteACLastChanged = NULL;
+        }
         if (!empty($response2->RemoteACRecords->ACStartStopURL)) {
             $result->ACStartStopURL = $response2->RemoteACRecords->ACStartStopURL;
         } else {
             $result->ACStartStopURL = NULL;
         }
-        $result->ACDurationBatterySec = (int) $response2->RemoteACRecords->ACDurationBatterySec;
-        $result->ACDurationPluggedSec = (int) $response2->RemoteACRecords->ACDurationPluggedSec;
+        if (isset($response2->RemoteACRecords->ACDurationBatterySec)) {
+            $result->ACDurationBatterySec = (int) $response2->RemoteACRecords->ACDurationBatterySec;
+        } else {
+            $result->ACDurationBatterySec = FALSE;
+        }
+        if (isset($response2->RemoteACRecords->ACDurationBatterySec)) {
+            $result->ACDurationPluggedSec = (int) $response2->RemoteACRecords->ACDurationPluggedSec;
+        } else {
+            $result->ACDurationPluggedSec = FALSE;
+        }
 
         return $result;
     }
