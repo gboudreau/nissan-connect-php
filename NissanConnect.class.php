@@ -23,6 +23,8 @@ class NissanConnect {
     const COUNTRY_CANADA = 'NCI';
     const COUNTRY_US = 'NNA';
     const COUNTRY_EU = 'NE';
+    const COUNTRY_AUSTRALIA = 'NMA';
+    const COUNTRY_JAPAN = 'NML';
 
     /* Those error code will be used in Exception that can be thrown when errors occur. */
     const ERROR_CODE_MISSING_RESULTKEY = 400;
