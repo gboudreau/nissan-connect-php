@@ -76,6 +76,7 @@ class NissanConnect {
         $this->config->basePRM = 'uyI5Dj9g8VCOFDnBRUbr3g'; // Will be overwritten with the response from the InitialApp.php call
         $this->config->customSessionID = ''; // Empty until login completes
         $this->config->encryptionOption = $encryptionOption;
+        date_default_timezone_set($tz);
     }
 
     /**
@@ -139,6 +140,8 @@ class NissanConnect {
         if ($option != static::STATUS_QUERY_OPTION_CACHED) {
             $this->sendRequest('BatteryStatusCheckRequest.php');
             if ($option != static::STATUS_QUERY_OPTION_ASYNC) {
+                $expected_last_updated_date = time();
+                $this->debug("Expected last updated date: " . date("Y-m-d H:i:s", $expected_last_updated_date));
                 $this->waitUntilSuccess('BatteryStatusCheckResultRequest.php');
             }
         }
@@ -146,8 +149,24 @@ class NissanConnect {
             return NULL;
         }
 
-        $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
-        $this->_checkStatusResult($response, 'BatteryStatusRecords');
+        // Make sure the response from BatteryStatusRecordsRequest.php was updated
+        $start = time();
+        while (TRUE) {
+            $response = $this->sendRequest('BatteryStatusRecordsRequest.php');
+            $this->_checkStatusResult($response, 'BatteryStatusRecords');
+
+            if (empty($expected_last_updated_date)) {
+                break;
+            }
+            $this->debug("Last Updated date received: " . date("Y-m-d H:i:s", strtotime($response->BatteryStatusRecords->OperationDateAndTime)));
+            $time_diff = abs($expected_last_updated_date - strtotime($response->BatteryStatusRecords->OperationDateAndTime));
+            $this->debug("  Last Updated Date: Received minus Expected = $time_diff seconds");
+            if ($time_diff > 120 && time() - $start < 60) {
+                sleep(5);
+                continue;
+            }
+            break;
+        }
 
         $response2 = $this->sendRequest('RemoteACRecordsRequest.php', array('TimeFrom' => gmdate('Y-m-d\TH:i:s', strtotime($this->config->UserVehicleBoundTime))));
 
