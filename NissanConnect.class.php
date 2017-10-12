@@ -272,6 +272,11 @@ class NissanConnect {
         }
     }
 
+    public function getLocation() {
+      $result = $this->sendRequest('MyCarFinderRequest.php');
+      return $this->waitUntilSuccess('MyCarFinderResultRequest.php');
+    }
+
     /**
      * Load the VIN, DCMID, UserVehicleBoundTime and CustomSessionID values, either from disk, if they were saved there by a previous call, or from the remote API, if not.
      *
