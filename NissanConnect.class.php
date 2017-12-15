@@ -172,6 +172,8 @@ class NissanConnect {
 
         $result = new stdClass();
 
+        $result->status = $response2->status;
+
         $result->LastUpdated = date('Y-m-d H:i', strtotime($response->BatteryStatusRecords->OperationDateAndTime));
 
         $result->PluggedIn = ( $response->BatteryStatusRecords->PluginState != 'NOT_CONNECTED' );
