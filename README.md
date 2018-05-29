@@ -14,14 +14,10 @@ You can just download NissanConnect.class.php and require/include it, or use com
 require_once 'NissanConnect.class.php';
 
 // All parameters except the first two (username & password) are optional; the default values are shown here
-// If you can't use the openssl_encrypt() function (very unlikely), you can use a web-service to encrypt your password. Simply change the last parameter to NissanConnect::ENCRYPTION_OPTION_WEBSERVICE
-$nissanConnect = new NissanConnect('you@something.com', 'your_password_here', 'America/New_York', NissanConnect::COUNTRY_US, NissanConnect::ENCRYPTION_OPTION_OPENSSL);
+$nissanConnect = new NissanConnect('you@something.com', 'your_password_here', 'America/New_York', NissanConnect::COUNTRY_US);
 
 // Change to TRUE to log debugging information into your PHP error log
 $nissanConnect->debug = FALSE;
-
-// How long (in seconds) should we wait for the result before giving up. Only used when $waitForResult = TRUE
-$nissanConnect->maxWaitTime = 290;
 
 try {
     $result = $nissanConnect->getStatus();
@@ -30,14 +26,11 @@ try {
     // Start charging
     $nissanConnect->startCharge();
     
-    // Should we wait until the command result is known, before returning? Enabling this will wait until the car executed the command, and returned the response, which can sometimes take a few minutes.
-    $waitForResult = FALSE; 
-    
     // Start Climate Control
-    $nissanConnect->startClimateControl($waitForResult);
+    $nissanConnect->startClimateControl();
     
     // Stop Climate Control
-    $nissanConnect->stopClimateControl($waitForResult);
+    $nissanConnect->stopClimateControl();
 } catch (Exception $ex) {
     echo "An error occurred: " . $ex->getMessage();
 }
@@ -54,11 +47,11 @@ object(stdClass)#9 (18) {
   ["Charging"]=>
   bool(false)
   ["ChargingMode"]=>
-  string(12) "NOT_CHARGING"
+  string(12) "NO"
   ["BatteryCapacity"]=>
-  int(12)
+  int(100)
   ["BatteryRemainingAmount"]=>
-  int(9)
+  int(92)
   ["BatteryRemainingAmountWH"]=>
   NULL
   ["BatteryRemainingAmountkWH"]=>
@@ -75,22 +68,13 @@ object(stdClass)#9 (18) {
   float(115.712)
   ["CruisingRangeUnit"]=>
   string(2) "km"
-  ["RemoteACRunning"]=>
-  bool(false)
-  ["RemoteACLastChanged"]=>
-  string(16) "2016-02-21 15:24"
-  ["ACStartStopURL"]=>
-  NULL
-  ["ACDurationBatterySec"]=>
-  int(900)
-  ["ACDurationPluggedSec"]=>
-  int(7200)
 }
 ```
 
 ## Acknowledgements
 
 Thanks to [Joshua Perry](https://github.com/joshperry) for his [Carwings protocol reference](https://github.com/joshperry/carwings) which I used as a reference to refactor my [One-click access to LEAF](https://github.com/gboudreau/LEAF_Carwings_EasyAccess) by creating this class.
+Thank to [BenWoodford](https://github.com/BenWoodford) for [BenWoodford/LeafAPI.md](https://gist.github.com/BenWoodford/141ca350445e994e69a70aabfb6db942)
 
 Developed mainly using a free open-source license of  
 ![PHPStorm](https://d3uepj124s5rcx.cloudfront.net/items/0V0z2p0e0K1D0F3t2r1P/logo_PhpStorm.png)  
