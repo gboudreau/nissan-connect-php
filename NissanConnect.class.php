@@ -46,7 +46,7 @@ class NissanConnect {
     /* @var boolean Enable to echo debugging information into the PHP error log. */
     public $debug = FALSE;
 
-    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_160803A/gdc/';
+    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_160803EC/gdc/';
 
     private $resultKey = NULL;
     private $config = NULL;
