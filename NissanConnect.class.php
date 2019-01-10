@@ -46,7 +46,16 @@ class NissanConnect {
     /* @var boolean Enable to echo debugging information into the PHP error log. */
     public $debug = FALSE;
 
-    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_160803EC/gdc/';
+    # The API URL is changed occasionally when Nissan introduce a new version.
+
+    # When the API changes, it's worth taking a look at other sources, such as:
+    # https://github.com/filcole/pycarwings2/issues/
+    # https://github.com/jdhorne/pycarwings2/issues/
+
+    private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_160803EC/gdc/';  # No longer works for some, but works in Sweden. Tweaks were needed to make it work after 2018-12-25
+    # private $baseURL = 'https://gdcportalgw.its-mo.com/api_v181217_NE/gdc/';    # New December 2018, but doesn't seem to work, gives {"status":408}
+    # private $baseURL = 'https://gdcportalgw.its-mo.com/api_v180117_NE/gdc/';    # New from Summer 2018? Not working as of Jan 2019, 404
+    # private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_160803A/gdc/'; # Stopped working summer 2018
 
     private $resultKey = NULL;
     private $config = NULL;
@@ -177,13 +186,11 @@ class NissanConnect {
      */
     public function getStatus($option = 0) {
         $this->prepare();
+
         if ($option != static::STATUS_QUERY_OPTION_CACHED) {
             $this->sendRequest('BatteryStatusCheckRequest.php');
-            if ($option != static::STATUS_QUERY_OPTION_ASYNC) {
-                $expected_last_updated_date = time();
-                $this->debug("Expected last updated date: " . date("Y-m-d H:i:s", $expected_last_updated_date));
-                $this->waitUntilSuccess('BatteryStatusCheckResultRequest.php');
-            }
+            $expected_last_updated_date = time();
+            $this->debug("Expected last updated date: " . date("Y-m-d H:i:s", $expected_last_updated_date));
         }
         if ($option == static::STATUS_QUERY_OPTION_ASYNC) {
             return NULL;
