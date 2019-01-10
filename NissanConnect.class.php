@@ -135,6 +135,46 @@ class NissanConnect {
         $result = $this->sendRequest('BatteryRemoteChargingRequest.php');
         return $result;
     }
+    /**
+     * Get driving history for the specified date
+     *
+     * @param date $targetDate Specify date to request information for
+     *
+     * @return stdClass
+     * @throws Exception
+     */
+    public function getHistory($targetDate=null) {
+        $this->prepare();
+        $result = $this->sendRequest('CarKarteDetailInfoRequest.php', array('TargetDate' => $targetDate));
+        return $result;
+    }
+
+    /*
+     * Get current location
+     * @return stdClass
+     * @throws Exception
+
+     * POST https://gdcportalgw.its-mo.com/gworchest_160803EC/gdc/MyCarFinderRequest.php HTTP/1.1
+     * Eiter wait until success, or keep requesting:
+     * POST https://gdcportalgw.its-mo.com/gworchest_160803EC/gdc/MyCarFinderResultRequest.php HTTP/1.1
+     */
+    public function getLocation() {
+      $result = $this->sendRequest('MyCarFinderRequest.php');
+      return $this->waitUntilSuccess('MyCarFinderResultRequest.php');
+    }
+
+    /**
+     * Get the last known location
+     *
+     * @return stdClass
+     * @throws Exception
+     */
+    public function lastLocation() {
+        $this->prepare();
+        $result = $this->sendRequest('MyCarFinderLatLng.php');
+        return $result;
+    }
+
 
     /**
      * Get battery & climate control status.
@@ -279,11 +319,6 @@ class NissanConnect {
         if (array_search($response->{$what}->OperationResult, $allowed_op_result) === FALSE) {
             throw new Exception("Invalid 'OperationResult' received in call to '{$what}Request.php': " . $response->{$what}->OperationResult, static::ERROR_CODE_INVALID_RESPONSE);
         }
-    }
-
-    public function getLocation() {
-      $result = $this->sendRequest('MyCarFinderRequest.php');
-      return $this->waitUntilSuccess('MyCarFinderResultRequest.php');
     }
 
     /**
