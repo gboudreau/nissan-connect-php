@@ -86,9 +86,14 @@ class NissanConnect {
      * @return stdClass
      * @throws Exception
      */
-    public function startClimateControl($waitForResult = FALSE) {
+    public function startClimateControl($waitForResult = FALSE, $target_temperature = NULL, $target_temperature_unit = 'C') {
         $this->prepare();
-        $result = $this->sendRequest("hvac/vehicles/{$this->config->vin}/activateHVAC", array('executionTime' => date('c')));
+        $params = array('executionTime' => date('c'));
+        if (!empty($target_temperature)) {
+            $params['preACunit'] = $target_temperature_unit;
+            $params['preACtemp'] = $target_temperature;
+        }
+        $result = $this->sendRequest("hvac/vehicles/{$this->config->vin}/activateHVAC", $params);
         return $result;
     }
 
@@ -174,6 +179,10 @@ class NissanConnect {
             $result->SOC =  $response->batteryRecords->BatteryStatus->soc->value;
         } else {
             $result->SOC = NULL;
+        }
+        // Interior temperature (MY2018+)
+        if (isset($response->temperatureRecords->inc_temp)) {
+            $result->interior_temperature = (float) $response->temperatureRecords->inc_temp;
         }
 
         foreach (array('timeRequired', 'timeRequired200', 'timeRequired200_6kW') as $var_name) {
