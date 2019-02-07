@@ -136,6 +136,25 @@ class NissanConnect {
     }
 
     /**
+     * Lock car doors.
+     *
+     * @param string $pin 4-digit security PIN as configured in the Nissan Connect App
+     *
+     * @return stdClass
+     * @throws Exception
+     */
+    public function lockDoors(string $pin = '0000') {
+        $this->prepare();
+        $params = array(
+            'remoteRequest' => array(
+                'authorizationKey' => $pin
+            )
+        );
+        $result = $this->sendRequest("remote/vehicles/{$this->config->vin}/accounts/{$this->config->accountID}/rdl/createRDL", $params);
+        return $result;
+    }
+
+    /**
      * Get battery & climate control status.
      *
      * @param int $option Specify one of the STATUS_QUERY_OPTION_* constant. @deprecated
