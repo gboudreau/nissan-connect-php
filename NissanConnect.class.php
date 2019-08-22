@@ -385,7 +385,7 @@ class NissanConnect {
         }
 
         if ($info['http_code'] !== 200) {
-            if (($info['http_code'] == 401 || $info['http_code'] == 404 || $info['http_code'] == 405) && $this->shouldRetry) {
+            if (($info['http_code'] == 401 || $info['http_code'] == 404 || $info['http_code'] == 405 || $json->status < 0) && $this->shouldRetry) {
                 $this->debug("Request for '$method $url' failed. Response received: " . json_encode($result) . " Will retry.");
                 $this->shouldRetry = FALSE; // Don't loop infinitely!
                 $this->config->customSessionID = NULL;
