@@ -40,6 +40,10 @@ class NissanConnect {
     const ENCRYPTION_OPTION_OPENSSL    = 0;
     const ENCRYPTION_OPTION_WEBSERVICE = 1;
 
+    const SECONDS_LIMIT_TO_CONSIDER_DATA_AS_FRESH = 120;
+    const SECONDS_LIMIT_FOR_RETRYING_REQUESTS = 120;
+    const SECONDS_BETWEEN_RETRIES = 5;
+
     /* @var int How long should we wait, before throwing an exception, when waiting for the car to execute a command. @see $waitForResult parameter in the various function calls. */
     public $maxWaitTime = 290;
 
@@ -210,9 +214,16 @@ class NissanConnect {
             $this->debug("Last Updated date received: " . date("Y-m-d H:i:s", strtotime($response->BatteryStatusRecords->OperationDateAndTime)));
             $time_diff = abs($expected_last_updated_date - strtotime($response->BatteryStatusRecords->OperationDateAndTime));
             $this->debug("  Last Updated Date: Received minus Expected = $time_diff seconds");
-            if ($time_diff > 120 && time() - $start < 60) {
-                sleep(5);
+            if ($time_diff < NissanConnect::SECONDS_LIMIT_TO_CONSIDER_DATA_AS_FRESH){
+              $this->debug("  Got freshly updated data in API response");
+            }
+            elseif (time() - $start < NissanConnect::SECONDS_LIMIT_FOR_RETRYING_REQUESTS){
+                $this->debug("  Haven't yet got fresh data from the API, trying again in " . NissanConnect::SECONDS_BETWEEN_RETRIES . " seconds");
+                sleep(NissanConnect::SECONDS_BETWEEN_RETRIES);
                 continue;
+            }
+            else{
+                $this->debug("  Reached time limit of " . NissanConnect::SECONDS_LIMIT_FOR_RETRYING_REQUESTS . " seconds, giving up waiting for updated data from API");
             }
             break;
         }
