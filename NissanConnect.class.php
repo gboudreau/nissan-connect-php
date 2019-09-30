@@ -430,7 +430,7 @@ class NissanConnect {
                 $this->debug("Found resultKey in response: $this->resultKey");
             }
             if ($json->status !== 200) {
-                if (($json->status == 401 || $json->status == 404) && $this->shouldRetry) {
+                if (($json->status == 401 || $json->status == 404 || $json->status < 0) && $this->shouldRetry) {
                     $this->debug("Request for '$path' failed. Response received: " . json_encode($json) . " Will retry.");
                     $this->shouldRetry = FALSE; // Don't loop infinitely!
                     $this->config->customSessionID = NULL;
