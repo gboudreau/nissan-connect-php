@@ -345,7 +345,8 @@ class NissanConnect {
     private function prepare($skip_local_file = FALSE) {
         if (empty($this->config->vin) || empty($this->config->dcmID) || empty($this->config->customSessionID) || empty($this->config->UserVehicleBoundTime)) {
             $uid = md5($this->config->username);
-            $unixuser = get_current_user();
+            # Use the posix function if available. This requires php-posix or php-process package
+            $unixuser = function_exists('posix_geteuid') ? posix_getpwuid(posix_geteuid())['name'] : get_current_user();
             $local_storage_file = sys_get_temp_dir() . "/.nissan-connect-storage-$uid-$unixuser.json";
             if (file_exists($local_storage_file) && !$skip_local_file) {
                 $json = @json_decode(file_get_contents($local_storage_file));
