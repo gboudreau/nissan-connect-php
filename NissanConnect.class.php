@@ -143,7 +143,7 @@ class NissanConnect {
      * @return stdClass
      * @throws Exception
      */
-    public function lockDoors(string $pin = '0000') {
+    public function lockDoors($pin = '0000') {
         $this->prepare();
         $params = array(
             'remoteRequest' => array(
