@@ -8,6 +8,10 @@ You can just download NissanConnect.class.php and require/include it, or use com
 
     require "gboudreau/nissan-connect-php": "dev-master"
 
+If you are in North America, you probably need to use the `new-api` branch, instead of `master`:
+
+    require "gboudreau/nissan-connect-php": "dev-new-api"
+
 ## Usage
 
 ```php
