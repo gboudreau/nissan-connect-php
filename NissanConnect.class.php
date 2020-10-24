@@ -288,7 +288,7 @@ class NissanConnect {
                 $this->config->accountID = @$json->accountID;
                 $this->config->cookie = @$json->cookie;
             }
-            if ($skip_local_file || empty($this->config->vin) || empty($this->config->authToken) || empty($this->config->accountID)) {
+            if ($skip_local_file || empty($this->config->vin) || empty($this->config->authToken) || empty($this->config->accountID) || empty($this->config->cookie)) {
                 $this->login();
                 file_put_contents($local_storage_file, json_encode(array('vin' => $this->config->vin, 'authToken' => $this->config->authToken, 'accountID' => $this->config->accountID, 'cookie' => $this->config->cookie)));
                 $this->debug("Saving authToken, VIN and accountID into local file $local_storage_file");
@@ -346,7 +346,7 @@ class NissanConnect {
             "API-Key: f950a00e-73a5-11e7-8cf7-a6006ad3dba0"
         );
 
-        if (!empty($this->config->authToken)) {
+        if (!empty($this->config->authToken) && $path != 'auth/authenticationForAAS') {
             $headers[] = "Authorization: {$this->config->authToken}";
         }
 
@@ -380,29 +380,30 @@ class NissanConnect {
         $info = curl_getinfo($ch);
         curl_close($ch);
 
-        if (is_array($cookies) && count($cookies) > 0 && strpos($cookies[0], 'JSESSIONID=') === 0) {
-            $this->config->cookie = $cookies[0];
+        if (is_array($cookies) && count($cookies) > 0) {
+            $this->config->cookie = implode("; ", $cookies);
         }
 
+        $json = @json_decode($result);
+
         if ($info['http_code'] !== 200) {
-            if (($info['http_code'] == 401 || $info['http_code'] == 404 || $info['http_code'] == 405 || $json->status < 0) && $this->shouldRetry) {
-                $this->debug("Request for '$method $url' failed. Response received: " . json_encode($result) . " Will retry.");
+            if (($info['http_code'] == 401 || $info['http_code'] == 404 || $info['http_code'] == 405 || @$json->status < 0) && $this->shouldRetry) {
+                $this->debug("Request for '$method $url' failed. Response received: $result. Will retry.");
                 $this->shouldRetry = FALSE; // Don't loop infinitely!
                 $this->config->customSessionID = NULL;
                 $this->prepare(TRUE);
                 return $this->sendRequest($path, $params, $method);
             }
-            throw new Exception("Request for '$method $url' failed. Response received: " . json_encode($result), $info['http_code']);
+            throw new Exception("Request for '$method $url' failed. Response received: $result" , $info['http_code']);
         }
 
-        $json = json_decode($result);
         if ($json) {
             $json->status = $info['http_code'];
             $this->debug("Response: " . json_encode($json));
             return $json;
         }
 
-        throw new Exception("Non-JSON response received for request to '$method $url'. Response received: " . json_encode($result), static::ERROR_CODE_NOT_JSON);
+        throw new Exception("Non-JSON response received for request to '$method $url'. Response received: $result", static::ERROR_CODE_NOT_JSON);
     }
 
     /**
