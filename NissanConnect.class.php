@@ -346,12 +346,13 @@ class NissanConnect {
             "API-Key: f950a00e-73a5-11e7-8cf7-a6006ad3dba0"
         );
 
-        if (!empty($this->config->authToken) && $path != 'auth/authenticationForAAS') {
-            $headers[] = "Authorization: {$this->config->authToken}";
-        }
-
-        if (!empty($this->config->cookie)) {
-            $headers[] = "Cookie: " . $this->config->cookie;
+        if ($path != 'auth/authenticationForAAS') {
+            if (!empty($this->config->authToken)) {
+                $headers[] = "Authorization: {$this->config->authToken}";
+            }
+            if (!empty($this->config->cookie)) {
+                $headers[] = "Cookie: " . $this->config->cookie;
+            }
         }
 
         $url = $this->baseURL . $path;
