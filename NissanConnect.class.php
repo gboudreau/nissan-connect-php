@@ -51,7 +51,7 @@ class NissanConnect {
     /* @var boolean Enable to echo debugging information into the PHP error log. */
     public $debug = FALSE;
 
-    private $baseURL = 'https://icm.infinitiusa.com/NissanLeafProd/rest/';
+    private $baseURL = 'https://icm.infinitiusa.com/NissanEVProd/rest/';
 
     private $config = NULL;
 
@@ -343,7 +343,7 @@ class NissanConnect {
     private function sendRequest($path, $params = array(), $method = 'POST') {
         $headers = array(
             "Content-Type: application/json; charset=utf-8",
-            "API-Key: f950a00e-73a5-11e7-8cf7-a6006ad3dba0"
+            "API-Key: bAwSKw0f+p0tG8astBGpvsXmgcWiVWLrh5ejIYg55D+jH1j1Oi3Hsqw21ri0XBJp"
         );
 
         if ($path != 'auth/authenticationForAAS') {
