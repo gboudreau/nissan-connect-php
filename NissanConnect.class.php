@@ -61,7 +61,8 @@ class NissanConnect {
     # private $baseURL = 'https://gdcportalgw.its-mo.com/api_v181217_NE/gdc/';    # New December 2018, but doesn't seem to work, gives {"status":408}
     # private $baseURL = 'https://gdcportalgw.its-mo.com/api_v180117_NE/gdc/';    # New from Summer 2018? Not working as of Jan 2019, 404
     # private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_160803A/gdc/'; # Stopped working summer 2018
-    private $baseURL = 'https://gdcportalgw.its-mo.com/api_v190426_NE/gdc/';
+    # private $baseURL = 'https://gdcportalgw.its-mo.com/api_v190426_NE/gdc/'; #Stopped working autumn 2021
+    private $baseURL = 'https://gdcportalgw.its-mo.com/api_v210707_NE/gdc/';
 
     private $resultKey = NULL;
     private $config = NULL;
