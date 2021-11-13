@@ -75,6 +75,7 @@ class NissanConnect {
         $this->config->vin = '';
         $this->config->authToken = '';
         $this->config->accountID = '';
+        $this->config->has_uakey = FALSE;
         date_default_timezone_set($tz);
     }
 
@@ -278,7 +279,7 @@ class NissanConnect {
      * @throws Exception
      */
     private function prepare($skip_local_file = FALSE) {
-        if ($skip_local_file || empty($this->config->vin) || empty($this->config->authToken) || empty($this->config->accountID) || empty($this->config->cookie)) {
+        if ($skip_local_file || empty($this->config->vin) || empty($this->config->authToken) || empty($this->config->accountID) || empty($this->config->cookie) || empty($this->config->has_uakey)) {
             $uid = md5($this->config->username);
             $local_storage_file = sys_get_temp_dir() . "/.nissan-connect-storage-$uid.json";
             if (file_exists($local_storage_file) && !$skip_local_file) {
@@ -288,9 +289,9 @@ class NissanConnect {
                 $this->config->accountID = @$json->accountID;
                 $this->config->cookie = @$json->cookie;
             }
-            if ($skip_local_file || empty($this->config->vin) || empty($this->config->authToken) || empty($this->config->accountID) || empty($this->config->cookie)) {
+            if ($skip_local_file || empty($this->config->vin) || empty($this->config->authToken) || empty($this->config->accountID) || empty($this->config->cookie) || empty($this->config->has_uakey)) {
                 $this->login();
-                file_put_contents($local_storage_file, json_encode(array('vin' => $this->config->vin, 'authToken' => $this->config->authToken, 'accountID' => $this->config->accountID, 'cookie' => $this->config->cookie)));
+                file_put_contents($local_storage_file, json_encode(array('vin' => $this->config->vin, 'authToken' => $this->config->authToken, 'accountID' => $this->config->accountID, 'cookie' => $this->config->cookie, 'has_uakey' => TRUE)));
                 $this->debug("Saving authToken, VIN and accountID into local file $local_storage_file");
             } else {
                 $this->debug("Using authToken, VIN and accountID found in local file $local_storage_file");
@@ -343,6 +344,8 @@ class NissanConnect {
     private function sendRequest($path, $params = array(), $method = 'POST') {
         $headers = array(
             "Content-Type: application/json; charset=utf-8",
+            "User-Agent-Key: pZiN3BSpfjtVulW6QB52Itw6rc5YEDZXKGlKzGsTvPY=",
+            "User-Agent: Dalvik/2.1.0 (Linux; U; Android 6.0; Aquaris M10 FHD Build/MRA58K)",
             "API-Key: Z9bNvSz8NZf0J3fLhwA3U27G4HQpwMBMYPHd3B+uzeWstfRPEue8AoS/xjIz34k8"
         );
 
