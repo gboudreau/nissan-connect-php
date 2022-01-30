@@ -344,10 +344,11 @@ class NissanConnect {
     private function sendRequest($path, $params = array(), $method = 'POST') {
         $headers = array(
             "Content-Type: application/json; charset=utf-8",
-            "User-Agent-Key: pZiN3BSpfjtVulW6QB52Itw6rc5YEDZXKGlKzGsTvPY=",
             "User-Agent: Dalvik/2.1.0 (Linux; U; Android 6.0; Aquaris M10 FHD Build/MRA58K)",
-            "API-Key: Z9bNvSz8NZf0J3fLhwA3U27G4HQpwMBMYPHd3B+uzeWstfRPEue8AoS/xjIz34k8"
+            "Api-Key: bJG8LvpcRAAOrVQ8GByIzWkR4n993iccFtKNs1sn+gheOFGnT6ABaR6cvclCXetW",
         );
+
+        $headers[] = "User-Agent-Key: " . $this->getUserAgentKey();
 
         if ($path != 'auth/authenticationForAAS') {
             if (!empty($this->config->authToken)) {
@@ -408,6 +409,36 @@ class NissanConnect {
         }
 
         throw new Exception("Non-JSON response received for request to '$method $url'. Response received: $result", static::ERROR_CODE_NOT_JSON);
+    }
+
+    private static $user_agent_key = NULL;
+    private function getUserAgentKey() {
+        if (!empty(static::$user_agent_key)) {
+            return static::$user_agent_key;
+        }
+        $app_id = '1:25831104952:android:364bc23813c51afc';
+        $project_id = '25831104952';
+        $api_key = 'AIzaSyBOFbpZI5N9zjx60DWWHETK52P0cTJ2RmM';
+        $url = "https://firebaseremoteconfig.googleapis.com/v1/projects/$project_id/namespaces/firebase:fetch?key=$api_key";
+        $data = array(
+            'appId' => $app_id,
+            'appInstanceId' => 'dummy',
+        );
+        $headers = array(
+            "Content-Type: application/json",
+        );
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, "curlResponseHeaderCallback");
+        $result = curl_exec($ch);
+        curl_close($ch);
+        $json = @json_decode($result);
+        static::$user_agent_key = $json->entries->welcome_message;
+        return static::$user_agent_key;
     }
 
     /**
