@@ -419,6 +419,7 @@ class NissanConnect {
         $app_id = '1:25831104952:android:364bc23813c51afc';
         $project_id = '25831104952';
         $api_key = 'AIzaSyBOFbpZI5N9zjx60DWWHETK52P0cTJ2RmM';
+        $android_cert = '94A5A06227EDB35F48BCA5092C2C091AD44C76EE';
         $url = "https://firebaseremoteconfig.googleapis.com/v1/projects/$project_id/namespaces/firebase:fetch?key=$api_key";
         $data = array(
             'appId' => $app_id,
@@ -426,6 +427,9 @@ class NissanConnect {
         );
         $headers = array(
             "Content-Type: application/json",
+            "X-Goog-Api-Key: $api_key",
+            "X-Android-Package: com.aqsmartphone.android.nissan",
+            "X-Android-Cert: $android_cert",
         );
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_POSTFIELDS, TRUE);
