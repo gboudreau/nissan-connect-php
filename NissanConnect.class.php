@@ -62,7 +62,8 @@ class NissanConnect {
     # private $baseURL = 'https://gdcportalgw.its-mo.com/api_v180117_NE/gdc/';    # New from Summer 2018? Not working as of Jan 2019, 404
     # private $baseURL = 'https://gdcportalgw.its-mo.com/gworchest_160803A/gdc/'; # Stopped working summer 2018
     # private $baseURL = 'https://gdcportalgw.its-mo.com/api_v190426_NE/gdc/'; #Stopped working autumn 2021
-    private $baseURL = 'https://gdcportalgw.its-mo.com/api_v210707_NE/gdc/';
+    # private $baseURL = 'https://gdcportalgw.its-mo.com/api_v210707_NE/gdc/'; # Stopped working May 2024
+    private $baseURL = 'https://gdcportalgw.its-mo.com/api_v230317_NE/gdc/'; # From https://github.com/joeshaw/carwings/issues/50, thanks docolli.
 
     private $resultKey = NULL;
     private $config = NULL;
